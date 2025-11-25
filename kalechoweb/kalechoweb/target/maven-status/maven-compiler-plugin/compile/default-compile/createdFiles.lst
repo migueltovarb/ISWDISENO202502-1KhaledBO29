@@ -1,0 +1,13 @@
+com\kalechoweb\backend\controller\RoomController.class
+com\kalechoweb\backend\service\RoomService.class
+com\kalechoweb\backend\StudyRoomApplication.class
+com\kalechoweb\backend\controller\AuthController.class
+com\kalechoweb\backend\repository\UserRepository.class
+com\kalechoweb\backend\repository\RoomRepository.class
+com\kalechoweb\backend\service\ReservationService.class
+com\kalechoweb\backend\model\Room.class
+com\kalechoweb\backend\service\UserService.class
+com\kalechoweb\backend\controller\ReservationController.class
+com\kalechoweb\backend\repository\ReservationRepository.class
+com\kalechoweb\backend\model\Reservation.class
+com\kalechoweb\backend\model\User.class

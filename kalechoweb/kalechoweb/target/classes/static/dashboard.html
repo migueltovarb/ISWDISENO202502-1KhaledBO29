@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Study Room</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header>
+        <h3>Study Room Reservation</h3>
+        <button class="btn btn-danger" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="container">
+        <h2>Available Rooms</h2>
+        <div id="rooms-container" class="grid">
+            <!-- Rooms will be loaded here -->
+        </div>
+
+        <h2 style="margin-top: 40px;">My Reservations</h2>
+        <div id="reservations-container">
+            <!-- Reservations will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Modal for Reservation -->
+    <div id="reservation-modal" class="card"
+        style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; border:1px solid #ccc;">
+        <h3>Book Room</h3>
+        <input type="hidden" id="modal-room-id">
+        <div class="form-group">
+            <label>Date & Time Start</label>
+            <input type="datetime-local" id="start-time">
+        </div>
+        <div class="form-group">
+            <label>Date & Time End</label>
+            <input type="datetime-local" id="end-time">
+        </div>
+        <button class="btn btn-primary" onclick="submitReservation()">Confirm</button>
+        <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        checkAuth();
+
+        async function loadRooms() {
+            const rooms = await getRooms();
+            const container = document.getElementById('rooms-container');
+            container.innerHTML = rooms.map(room => `
+                <div class="card room-card">
+                    <h3>${room.name}</h3>
+                    <p>Capacity: ${room.capacity}</p>
+                    <p>Resources: ${room.resources ? room.resources.join(', ') : 'None'}</p>
+                    <button class="btn btn-primary" onclick="openModal('${room.id}')">Book Now</button>
+                </div>
+            `).join('');
+        }
+
+        async function loadMyReservations() {
+            const reservations = await getMyReservations();
+            const container = document.getElementById('reservations-container');
+            container.innerHTML = reservations.map(res => `
+                <div class="card reservation-card">
+                    <div>
+                        <strong>Room ID: ${res.roomId}</strong><br>
+                        From: ${new Date(res.startTime).toLocaleString()}<br>
+                        To: ${new Date(res.endTime).toLocaleString()}<br>
+                        Status: ${res.status}
+                    </div>
+                    ${res.status !== 'CANCELLED' ? `<button class="btn btn-danger" onclick="cancelReservation('${res.id}')">Cancel</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function openModal(roomId) {
+            document.getElementById('modal-room-id').value = roomId;
+            document.getElementById('reservation-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('reservation-modal').style.display = 'none';
+        }
+
+        async function submitReservation() {
+            const roomId = document.getElementById('modal-room-id').value;
+            const start = document.getElementById('start-time').value;
+            const end = document.getElementById('end-time').value;
+
+            if (!start || !end) {
+                alert('Please select times');
+                return;
+            }
+
+            if (new Date(start) >= new Date(end)) {
+                alert('End time must be after start time');
+                return;
+            }
+
+            await createReservation(roomId, start, end);
+            closeModal();
+        }
+
+        // Initialize date pickers
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        const nowString = now.toISOString().slice(0, 16);
+
+        const startTimeInput = document.getElementById('start-time');
+        const endTimeInput = document.getElementById('end-time');
+
+        startTimeInput.min = nowString;
+
+        startTimeInput.addEventListener('change', function () {
+            endTimeInput.min = this.value;
+            if (endTimeInput.value && endTimeInput.value < this.value) {
+                endTimeInput.value = this.value;
+            }
+        });
+
+        loadRooms();
+        loadMyReservations();
+    </script>
+</body>
+
+</html>
